@@ -1,0 +1,8 @@
+hash: ec3c9eb9b3877540576f9c7d353e9c186e69889c485a6aa7964ab726ec361c03
+updated: 2017-12-08T21:22:01.899664-02:00
+imports:
+- name: github.com/alexflint/go-arg
+  version: cef6506c97e5731da728c374ff3523e481026423
+- name: github.com/rs/zerolog
+  version: 3ac71fc58dbd43122668a912b755b0979ba9ce1f
+testImports: []
