@@ -1,5 +1,12 @@
 package lib
 
+import (
+	"bytes"
+	"text/template"
+
+	"github.com/pkg/errors"
+)
+
 type EvaluationType int
 
 const (
@@ -8,15 +15,13 @@ const (
 	EvaluationRemoveRecord
 )
 
-// State maps zones to a list of records.
-// For instance:
-//	zone1:
-//		- something
-//		- something-else
-//	asg2-zone33:
-//		- 192-168-10-10
-//		- else-bar
-type State map[string][]string
+// Record corresponds to an A record that maps
+// a DNS record to multiple IPs
+type Record struct {
+	Zone string
+	Name string
+	IPs  []string
+}
 
 // Evaluation wraps an action that must be taken
 // by the evaluator which acts as the system that
@@ -91,4 +96,37 @@ type FormattingRule struct {
 	//	instance-i-012931-asg1 for a machine
 	// with the id `i-012931`.
 	Record string
+
+	// template corresponds to the parsed Record template
+	template *template.Template
+}
+
+func (f *FormattingRule) ParseRecordTemplate() (err error) {
+	var tmpl *template.Template
+
+	tmpl, err = template.New("tmpl").Parse(f.Record)
+	if err != nil {
+		err = errors.Wrapf(err,
+			"failed to instantiate template for record '%s'",
+			f.Record)
+		return
+	}
+
+	f.template = tmpl
+	return
+}
+
+func (f *FormattingRule) TemplateRecord(instance *Instance) (res string, err error) {
+	var buf = new(bytes.Buffer)
+
+	err = f.template.Execute(buf, instance)
+	if err != nil {
+		err = errors.Wrapf(err,
+			"failed to template record '%s' with instance data %+v",
+			f.Record, instance)
+		return
+	}
+
+	res = buf.String()
+	return
 }

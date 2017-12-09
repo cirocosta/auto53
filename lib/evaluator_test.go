@@ -10,8 +10,8 @@ import (
 func TestGetEvaluations(t *testing.T) {
 	var testCases = []struct {
 		desc        string
-		current     *State
-		desired     *State
+		current     []*Record
+		desired     []*Record
 		expected    []*Evaluation
 		shouldError bool
 	}{
@@ -22,14 +22,14 @@ func TestGetEvaluations(t *testing.T) {
 		},
 		{
 			desc:        "fail if nil desired",
-			current:     &State{},
+			current:     []*Record{},
 			desired:     nil,
 			shouldError: true,
 		},
 		{
 			desc:        "success w/ no evaluations if both empty",
-			current:     &State{},
-			desired:     &State{},
+			current:     []*Record{},
+			desired:     []*Record{},
 			expected:    []*Evaluation{},
 			shouldError: false,
 		},
@@ -59,29 +59,139 @@ func TestCreateState(t *testing.T) {
 		desc        string
 		asgs        []*AutoScalingGroup
 		rules       []*FormattingRule
-		expected    *State
+		expected    []*Record
 		shouldError bool
 	}{
 		{
 			desc:        "nil should fail",
 			shouldError: true,
 		},
+		{
+			desc: "single instance without formatting",
+			asgs: []*AutoScalingGroup{
+				{
+					Name: "asg1",
+					Instances: []*Instance{
+						{
+							Id:       "inst1",
+							PublicIp: "1.1.1.1",
+						},
+					},
+				},
+			},
+			rules: []*FormattingRule{
+				{
+					AutoScalingGroup: "asg1",
+					Zone:             "apex1",
+					Record:           "aaa",
+				},
+			},
+			expected: []*Record{
+				{
+					Zone: "asg1",
+					Name: "aaa",
+					IPs: []string{
+						"1.1.1.1",
+					},
+				},
+			},
+			shouldError: false,
+		},
+		{
+			desc: "multiple instances without formatting",
+			asgs: []*AutoScalingGroup{
+				{
+					Name: "asg1",
+					Instances: []*Instance{
+						{
+							Id:       "inst1",
+							PublicIp: "1.1.1.1",
+						},
+						{
+							Id:       "inst1",
+							PublicIp: "1.1.1.2",
+						},
+					},
+				},
+			},
+			rules: []*FormattingRule{
+				{
+					AutoScalingGroup: "asg1",
+					Zone:             "apex1",
+					Record:           "aaa",
+				},
+			},
+			expected: []*Record{
+				{
+					Zone: "asg1",
+					Name: "aaa",
+					IPs: []string{
+						"1.1.1.1",
+						"1.1.1.2",
+					},
+				},
+			},
+			shouldError: false,
+		},
+		{
+			desc: "with formatting and multiple instances",
+			asgs: []*AutoScalingGroup{
+				{
+					Name: "asg1",
+					Instances: []*Instance{
+						{
+							Id:       "inst1",
+							PublicIp: "1.1.1.1",
+						},
+						{
+							Id:       "inst2",
+							PublicIp: "1.1.1.2",
+						},
+					},
+				},
+			},
+			rules: []*FormattingRule{
+				{
+					AutoScalingGroup: "asg1",
+					Zone:             "apex1",
+					Record:           "{{ .Id }}-asg1",
+				},
+			},
+			expected: []*Record{
+				{
+					Zone: "asg1",
+					Name: "inst1-asg1",
+					IPs: []string{
+						"1.1.1.1",
+					},
+				},
+				{
+					Zone: "asg1",
+					Name: "inst2-asg1",
+					IPs: []string{
+						"1.1.1.2",
+					},
+				},
+			},
+			shouldError: false,
+		},
 	}
 
 	var (
-		state State
-		err   error
+		records []*Record
+		err     error
 	)
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			state, err = CreateState(tc.asgs, tc.rules)
+			records, err = CreateRecords(tc.asgs, tc.rules)
 			if tc.shouldError {
 				assert.Error(t, err)
 				return
 			}
 
 			require.NoError(t, err)
+			require.Equal(t, len(tc.expected), len(records))
 		})
 	}
 }
