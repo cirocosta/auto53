@@ -3,3 +3,5 @@ import:
 - package: github.com/alexflint/go-arg
 - package: github.com/rs/zerolog
   version: v1.3.0
+- package: github.com/pkg/errors
+  version: v0.8.0
