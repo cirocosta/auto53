@@ -42,24 +42,36 @@ func NewAuto(cfg AutoConfig) (a Auto, err error) {
 
 const autoscalingGroupTag = "aws:autoscaling:groupName"
 
-func (a *Auto) GetAutoscalingGroup(name string) (asg *AutoScalingGroup, err error) {
-	if name == "" {
-		err = errors.Errorf("name can't be nil")
+// TODO paginate over all results
+func (a *Auto) ListAutoscalingGroups(names []string) (asgsMap map[string]*AutoScalingGroup, err error) {
+	if len(names) == 0 {
+		err = errors.Errorf("names can't be empty")
 		return
+	}
+
+	tagsFilter := &ec2.Filter{
+		Name:   aws.String("tag:" + autoscalingGroupTag),
+		Values: []*string{},
+	}
+
+	asgsMap = map[string]*AutoScalingGroup{}
+
+	for _, name := range names {
+		tagsFilter.Values = append(
+			tagsFilter.Values,
+			aws.String(name))
+		asgsMap[name] = &AutoScalingGroup{Name: name}
 	}
 
 	var (
 		input = &ec2.DescribeInstancesInput{
 			Filters: []*ec2.Filter{
-				&ec2.Filter{
-					Name: aws.String("tag:" + autoscalingGroupTag),
-					Values: []*string{
-						aws.String(name),
-					},
-				},
+				tagsFilter,
 			},
 		}
 		result *ec2.DescribeInstancesOutput
+		asg    *AutoScalingGroup
+		tags   map[string]string
 	)
 
 	result, err = a.ec2.DescribeInstances(input)
@@ -68,16 +80,29 @@ func (a *Auto) GetAutoscalingGroup(name string) (asg *AutoScalingGroup, err erro
 		return
 	}
 
-	asg = &AutoScalingGroup{
-		Name:      name,
-		Instances: []*Instance{},
-	}
 	for _, reservation := range result.Reservations {
 		for _, instance := range reservation.Instances {
+			tags = map[string]string{}
+			asg = nil
+
+			for _, tag := range instance.Tags {
+				tags[*tag.Key] = *tag.Value
+			}
+
+			asg, _ = asgsMap[tags[autoscalingGroupTag]]
+			if asg == nil {
+				err = errors.Errorf(
+					"couldn't find asg for instance %+v",
+					instance)
+				return
+			}
+
 			asg.Instances = append(asg.Instances, &Instance{
 				Id:        *instance.InstanceId,
 				PublicIp:  *instance.PublicIpAddress,
 				PrivateIp: *instance.PrivateIpAddress,
+				Tags:      tags,
+				Running:   *instance.State.Name == "running",
 			})
 		}
 	}
@@ -85,6 +110,38 @@ func (a *Auto) GetAutoscalingGroup(name string) (asg *AutoScalingGroup, err erro
 	return
 }
 
+// ListZones iterates over all the zones that can be
+// fetched by the user. It then only shows those that
+// are described by rules provided.
+// TODO paginate over all results
+func (a *Auto) ListZones() (zones []*Zone, err error) {
+	var (
+		input  = &route53.ListHostedZonesInput{}
+		result *route53.ListHostedZonesOutput
+	)
+
+	result, err = a.route53.ListHostedZones(input)
+	if err != nil {
+		err = errors.Wrapf(err,
+			"failed to list hosted zone of account")
+		return
+	}
+
+	zones = make([]*Zone, 0)
+	for _, zone := range result.HostedZones {
+		zones = append(zones, &Zone{
+			ID:      *zone.Id,
+			Name:    *zone.Name,
+			Private: *zone.Config.PrivateZone,
+		})
+	}
+
+	return
+}
+
+// ListZoneRecords lists the A records of a given zone
+// identified by a ZoneID.
+// TODO paginate over all results
 func (a *Auto) ListZoneRecords(zone string) (records []*Record, err error) {
 	var (
 		input = &route53.ListResourceRecordSetsInput{
@@ -103,6 +160,10 @@ func (a *Auto) ListZoneRecords(zone string) (records []*Record, err error) {
 
 	records = make([]*Record, 0)
 	for _, recordSet := range result.ResourceRecordSets {
+		if *recordSet.Type != "A" {
+			continue
+		}
+
 		record := &Record{
 			Zone: zone,
 			Name: *recordSet.Name,

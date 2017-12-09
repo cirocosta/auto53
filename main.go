@@ -37,6 +37,27 @@ func must(err error) {
 func main() {
 	arg.MustParse(args)
 
-	_, err := lib.NewAuto(lib.AutoConfig{})
+	a, err := lib.NewAuto(lib.AutoConfig{})
 	must(err)
+
+	records, err := a.ListZoneRecords("/hostedzone/Z1UYP7K3ZF7TLR")
+	must(err)
+
+	for _, record := range records {
+		logger.Info().Interface("record", record).Msg("aaa")
+	}
+
+	zones, err := a.ListZones()
+	must(err)
+
+	for _, zone := range zones {
+		logger.Info().Interface("zone", zone).Msg("bbb")
+	}
+
+	asgs, err := a.ListAutoscalingGroups([]string{"wedeploy-swarm-worker-xyz1"})
+	must(err)
+
+	for _, asg := range asgs {
+		logger.Info().Interface("asg", asg).Msg("ccc")
+	}
 }

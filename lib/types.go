@@ -23,6 +23,12 @@ type Record struct {
 	IPs  []string
 }
 
+type Zone struct {
+	Name    string
+	ID      string
+	Private bool
+}
+
 // Evaluation wraps an action that must be taken
 // by the evaluator which acts as the system that
 // mutates Route53.
