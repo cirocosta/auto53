@@ -22,6 +22,18 @@ var (
 		With().
 		Str("from", "main").
 		Logger()
+	rules = []*lib.FormattingRule{
+		{
+			AutoScalingGroup: "wedeploy-swarm-worker-xyz1",
+			Zone:             "private-wedeploy-xyz1",
+			Record:           "{{ .Id }}-asg",
+		},
+		{
+			AutoScalingGroup: "wedeploy-swarm-worker-xyz1",
+			Zone:             "private-wedeploy-xyz1",
+			Record:           "instances",
+		},
+	}
 )
 
 func must(err error) {
@@ -37,7 +49,9 @@ func must(err error) {
 func main() {
 	arg.MustParse(args)
 
-	a, err := lib.NewAuto(lib.AutoConfig{})
+	a, err := lib.NewAuto(lib.AutoConfig{
+		FormattingRules: rules,
+	})
 	must(err)
 
 	records, err := a.ListZoneRecords("/hostedzone/Z1UYP7K3ZF7TLR")
@@ -60,4 +74,12 @@ func main() {
 	for _, asg := range asgs {
 		logger.Info().Interface("asg", asg).Msg("ccc")
 	}
+
+	records, err = lib.CreateRecords(asgs, rules)
+	must(err)
+
+	for _, record := range records {
+		logger.Info().Interface("created-record", record).Msg("ddd")
+	}
+
 }

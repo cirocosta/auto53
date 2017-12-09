@@ -23,6 +23,12 @@ type AutoConfig struct {
 }
 
 func NewAuto(cfg AutoConfig) (a Auto, err error) {
+	if len(cfg.FormattingRules) == 0 {
+		err = errors.Errorf("FormattingRules must be specified")
+		return
+	}
+
+	a.formattingRules = cfg.FormattingRules
 	a.logger = zerolog.New(os.Stdout).
 		With().
 		Str("from", "auto").
@@ -40,7 +46,10 @@ func NewAuto(cfg AutoConfig) (a Auto, err error) {
 	return
 }
 
-const autoscalingGroupTag = "aws:autoscaling:groupName"
+const (
+	autoscalingGroupTag = "aws:autoscaling:groupName"
+	runningState        = "running"
+)
 
 // TODO paginate over all results
 func (a *Auto) ListAutoscalingGroups(names []string) (asgsMap map[string]*AutoScalingGroup, err error) {
@@ -102,7 +111,7 @@ func (a *Auto) ListAutoscalingGroups(names []string) (asgsMap map[string]*AutoSc
 				PublicIp:  *instance.PublicIpAddress,
 				PrivateIp: *instance.PrivateIpAddress,
 				Tags:      tags,
-				Running:   *instance.State.Name == "running",
+				Running:   *instance.State.Name == runningState,
 			})
 		}
 	}

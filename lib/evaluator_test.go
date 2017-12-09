@@ -57,7 +57,7 @@ func TestGetEvaluations(t *testing.T) {
 func TestCreateState(t *testing.T) {
 	var testCases = []struct {
 		desc        string
-		asgs        []*AutoScalingGroup
+		asgs        map[string]*AutoScalingGroup
 		rules       []*FormattingRule
 		expected    []*Record
 		shouldError bool
@@ -67,9 +67,9 @@ func TestCreateState(t *testing.T) {
 			shouldError: true,
 		},
 		{
-			desc: "single instance without formatting",
-			asgs: []*AutoScalingGroup{
-				{
+			desc: "single instance single asg without formatting",
+			asgs: map[string]*AutoScalingGroup{
+				"asg1": {
 					Name: "asg1",
 					Instances: []*Instance{
 						{
@@ -98,9 +98,9 @@ func TestCreateState(t *testing.T) {
 			shouldError: false,
 		},
 		{
-			desc: "multiple instances without formatting",
-			asgs: []*AutoScalingGroup{
-				{
+			desc: "multiple instances single asg without formatting",
+			asgs: map[string]*AutoScalingGroup{
+				"asg1": {
 					Name: "asg1",
 					Instances: []*Instance{
 						{
@@ -108,7 +108,7 @@ func TestCreateState(t *testing.T) {
 							PublicIp: "1.1.1.1",
 						},
 						{
-							Id:       "inst1",
+							Id:       "inst2",
 							PublicIp: "1.1.1.2",
 						},
 					},
@@ -134,9 +134,65 @@ func TestCreateState(t *testing.T) {
 			shouldError: false,
 		},
 		{
-			desc: "with formatting and multiple instances",
-			asgs: []*AutoScalingGroup{
+			desc: "multiple instances multiple asgs without formatting",
+			asgs: map[string]*AutoScalingGroup{
+				"asg1": {
+					Name: "asg1",
+					Instances: []*Instance{
+						{
+							Id:       "inst1",
+							PublicIp: "1.1.1.1",
+						},
+						{
+							Id:       "inst2",
+							PublicIp: "1.1.1.2",
+						},
+					},
+				},
+				"asg2": {
+					Name: "asg2",
+					Instances: []*Instance{
+						{
+							Id:       "vvvv1",
+							PublicIp: "2.2.2.1",
+						},
+						{
+							Id:       "vvvv2",
+							PublicIp: "2.2.2.2",
+						},
+					},
+				},
+			},
+			rules: []*FormattingRule{
 				{
+					AutoScalingGroup: "asg1",
+					Zone:             "apex1",
+					Record:           "aaa",
+				},
+				{
+					AutoScalingGroup: "asg2",
+					Zone:             "apex1",
+					Record:           "aaa",
+				},
+			},
+			expected: []*Record{
+				{
+					Zone: "apex1",
+					Name: "aaa",
+					IPs: []string{
+						"1.1.1.1",
+						"1.1.1.2",
+						"2.2.2.1",
+						"2.2.2.2",
+					},
+				},
+			},
+			shouldError: false,
+		},
+		{
+			desc: "with formatting and multiple instances",
+			asgs: map[string]*AutoScalingGroup{
+				"asg1": {
 					Name: "asg1",
 					Instances: []*Instance{
 						{

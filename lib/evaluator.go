@@ -18,7 +18,7 @@ func GetEvaluations(current, desired []*Record) (evals []*Evaluation, err error)
 // records state.
 // TODO possibly take privateIp instead of
 //	publicIp
-func CreateRecords(asgs []*AutoScalingGroup, rules []*FormattingRule) (records []*Record, err error) {
+func CreateRecords(asgs map[string]*AutoScalingGroup, rules []*FormattingRule) (records []*Record, err error) {
 	if asgs == nil || rules == nil {
 		err = errors.Errorf("asgs and rules must be non-nil")
 		return
@@ -26,19 +26,17 @@ func CreateRecords(asgs []*AutoScalingGroup, rules []*FormattingRule) (records [
 
 	var (
 		recordsMap      = map[string]*Record{}
-		asgMap          = map[string][]*Instance{}
+		ruleAsg         string
+		asg             *AutoScalingGroup
+		present         bool
 		fqdn            string
 		templatedRecord string
 	)
 
 	records = make([]*Record, 0)
 
-	for _, asg := range asgs {
-		asgMap[asg.Name] = asg.Instances
-	}
-
 	for _, rule := range rules {
-		asg := rule.AutoScalingGroup
+		ruleAsg = rule.AutoScalingGroup
 
 		err = rule.ParseRecordTemplate()
 		if err != nil {
@@ -46,13 +44,13 @@ func CreateRecords(asgs []*AutoScalingGroup, rules []*FormattingRule) (records [
 			return
 		}
 
-		instances, present := asgMap[asg]
+		asg, present = asgs[ruleAsg]
 		if !present {
-			err = errors.Errorf("couldn't find asg %s for rule", asg)
+			err = errors.Errorf("couldn't find asg %s for rule", ruleAsg)
 			return
 		}
 
-		for _, instance := range instances {
+		for _, instance := range asg.Instances {
 			templatedRecord, err = rule.TemplateRecord(instance)
 			if err != nil {
 				err = errors.Wrapf(err, "failed to template record")
