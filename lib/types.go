@@ -1,5 +1,22 @@
 package lib
 
+type EvaluationType int
+
+const (
+	EvaluationUnknown EvaluationType = iota
+	EvaluationAddRecord
+	EvaluationRemoveRecord
+)
+
+type Evaluation struct {
+	Record string
+	Type   EvaluationType
+}
+
+type State struct {
+	Zones []*Zone
+}
+
 type Zone struct {
 	Name    string
 	Formats []*AutoScalingGroupFormat

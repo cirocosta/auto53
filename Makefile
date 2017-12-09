@@ -5,4 +5,7 @@ fmt:
 	go fmt
 	cd ./lib && go fmt
 
+test:
+	cd ./lib && go test -v
+
 .PHONY: install fmt
