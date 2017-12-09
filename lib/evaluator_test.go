@@ -16,12 +16,22 @@ func TestGetEvaluations(t *testing.T) {
 		shouldError bool
 	}{
 		{
-			desc:        "nil current",
+			desc:        "fail if nil current",
+			current:     nil,
 			shouldError: true,
 		},
 		{
-			desc:        "nil desired",
+			desc:        "fail if nil desired",
+			current:     &State{},
+			desired:     nil,
 			shouldError: true,
+		},
+		{
+			desc:        "success w/ no evaluations if both empty",
+			current:     &State{},
+			desired:     &State{},
+			expected:    []*Evaluation{},
+			shouldError: false,
 		},
 	}
 

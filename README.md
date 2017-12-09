@@ -12,25 +12,31 @@
 For instance, consider the following state in EC2:
 
 ```yaml
+# internal state retrieved from the 
+# inspection of EC2
 autoscaling_groups:
-  asg1:
-    machines:
+  - name: asg1
+    instances:
       - id: 'i-0123'
         private_ip: '10.0.0.2'
       - id: 'i-0321'
         private_ip: '10.0.0.3' 
 ```
 
-and also the following configuration:
+and also the following formatting configuration:
 
 ```yaml
-zones:
-  ciro-test:
-    autoscaling_groups:
-      - name: 'asg1'
-        record: 'asg1-machines'
-      - name: 'asg1'
-        record: '{{ .Id }}-machine'
+# for each zone we can tie several
+# autoscaling groups that present
+# an automatic record creation rule.
+formatting_rules:
+  - autoscaling_group: 'asg1'
+    zone': 'ciro-test'
+    record: 'asg1-machines'
+
+  - autoscaling_group: 'asg1'
+    zone': 'ciro-test'
+    record: '{{ .Id }}-machine'
 ```
 
 with that we'd end up with the following records:
