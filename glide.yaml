@@ -11,3 +11,8 @@ import:
   - service/route53
   - aws/session
   - aws
+- package: github.com/stretchr/testify
+  version: v1.1.4
+  subpackages:
+  - require
+  - assert

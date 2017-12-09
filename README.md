@@ -40,10 +40,10 @@ asg1-machines.ciro-test:
   - 10.0.0.2
   - 10.0.0.3
 
-i-0123-machine.ciro-test
+i-0123-machine.ciro-test:
   - 10.0.0.2
 
-i-0321-machine.ciro-test
+i-0321-machine.ciro-test:
   - 10.0.0.3
 ```
 

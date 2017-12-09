@@ -5,7 +5,7 @@ type Zone struct {
 	Formats []*AutoScalingGroupFormat
 }
 
-type Machine struct {
+type Instance struct {
 	Id        string
 	PublicIp  string
 	PrivateIp string
@@ -28,7 +28,7 @@ type AutoScalingGroupFormat struct {
 
 	// Record is a template that is used
 	// as the name for the entry in the zone.
-	// ps.: It can use the properties of the Machine
+	// ps.: It can use the properties of the Instance
 	// type.
 	//
 	// For instance:
