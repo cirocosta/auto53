@@ -86,5 +86,35 @@ func (a *Auto) GetAutoscalingGroup(name string) (asg *AutoScalingGroup, err erro
 }
 
 func (a *Auto) ListZoneRecords(zone string) (records []*Record, err error) {
+	var (
+		input = &route53.ListResourceRecordSetsInput{
+			HostedZoneId: aws.String(zone),
+		}
+		result *route53.ListResourceRecordSetsOutput
+	)
+
+	result, err = a.route53.ListResourceRecordSets(input)
+	if err != nil {
+		err = errors.Wrapf(err,
+			"failed to list resource records of zone %s",
+			zone)
+		return
+	}
+
+	records = make([]*Record, 0)
+	for _, recordSet := range result.ResourceRecordSets {
+		record := &Record{
+			Zone: zone,
+			Name: *recordSet.Name,
+			IPs:  []string{},
+		}
+
+		for _, resourceRecord := range recordSet.ResourceRecords {
+			record.IPs = append(record.IPs, *resourceRecord.Value)
+		}
+
+		records = append(records, record)
+	}
+
 	return
 }
