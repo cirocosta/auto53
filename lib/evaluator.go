@@ -12,3 +12,7 @@ func GetEvaluations(current, desired *State) (evals []*Evaluation, err error) {
 
 	return
 }
+
+func CreateRecords(asgs []*AutoScalingGroup, rules []*FormattingRule) (err error) {
+	return
+}
