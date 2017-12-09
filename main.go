@@ -1,11 +1,11 @@
 package main
 
 import (
-	"time"
 	"os"
+	"time"
 
-	"github.com/cirocosta/auto53/lib"
 	"github.com/alexflint/go-arg"
+	"github.com/cirocosta/auto53/lib"
 	"github.com/rs/zerolog"
 )
 
@@ -24,7 +24,7 @@ var (
 		Logger()
 )
 
-func must (err error) {
+func must(err error) {
 	if err == nil {
 		return
 	}

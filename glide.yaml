@@ -5,3 +5,9 @@ import:
   version: v1.3.0
 - package: github.com/pkg/errors
   version: v0.8.0
+- package: github.com/aws/aws-sdk-go
+  version: v1.12.44
+  subpackages:
+  - service/route53
+  - aws/session
+  - aws
