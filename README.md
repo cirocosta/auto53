@@ -74,13 +74,13 @@ asg1-machines.ciro-test:
   - 10.0.0.4
   - 10.0.0.5
 
-i-0123-machine.ciro-test
+i-0123-machine.ciro-test:
   - 10.0.0.2
 
-i-0444-machine.ciro-test
+i-0444-machine.ciro-test:
   - 10.0.0.4
 
-i-0555-machine.ciro-test
+i-0555-machine.ciro-test:
   - 10.0.0.5
 ```
 
