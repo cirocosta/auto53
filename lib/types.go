@@ -12,6 +12,7 @@ type EvaluationType int
 const (
 	EvaluationUnknown EvaluationType = iota
 	EvaluationAddRecord
+	EvaluationUpdateRecord
 	EvaluationRemoveRecord
 )
 
@@ -36,7 +37,7 @@ type Evaluation struct {
 
 	// Record is the record that we either add or remove
 	// into/of a zone.
-	Record string
+	Record *Record
 
 	// Type is the type of evaluation to perform:
 	// add or remove.

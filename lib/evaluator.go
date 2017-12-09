@@ -4,6 +4,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// GetEvaluations retrieve a list of ordered
+// evaluations to be performed on the current
+// state to reach the desired state.
+//
 func GetEvaluations(current, desired []*Record) (evals []*Evaluation, err error) {
 	if current == nil || desired == nil {
 		err = errors.Errorf("current and desired must be non-nil")
