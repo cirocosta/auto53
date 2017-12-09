@@ -88,7 +88,7 @@ func TestCreateState(t *testing.T) {
 			},
 			expected: []*Record{
 				{
-					Zone: "asg1",
+					Zone: "apex1",
 					Name: "aaa",
 					IPs: []string{
 						"1.1.1.1",
@@ -123,7 +123,7 @@ func TestCreateState(t *testing.T) {
 			},
 			expected: []*Record{
 				{
-					Zone: "asg1",
+					Zone: "apex1",
 					Name: "aaa",
 					IPs: []string{
 						"1.1.1.1",
@@ -159,14 +159,14 @@ func TestCreateState(t *testing.T) {
 			},
 			expected: []*Record{
 				{
-					Zone: "asg1",
+					Zone: "apex1",
 					Name: "inst1-asg1",
 					IPs: []string{
 						"1.1.1.1",
 					},
 				},
 				{
-					Zone: "asg1",
+					Zone: "apex1",
 					Name: "inst2-asg1",
 					IPs: []string{
 						"1.1.1.2",
@@ -178,8 +178,10 @@ func TestCreateState(t *testing.T) {
 	}
 
 	var (
-		records []*Record
-		err     error
+		records        []*Record
+		expectedRecord *Record
+		expectedIP     string
+		err            error
 	)
 
 	for _, tc := range testCases {
@@ -192,6 +194,21 @@ func TestCreateState(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, len(tc.expected), len(records))
+
+			for i, actualRecord := range records {
+				expectedRecord = tc.expected[i]
+
+				assert.Equal(t, expectedRecord.Name, actualRecord.Name)
+				assert.Equal(t, expectedRecord.Zone, actualRecord.Zone)
+				assert.Equal(t, len(expectedRecord.IPs), len(actualRecord.IPs))
+
+				for k, actualIP := range actualRecord.IPs {
+					expectedIP = expectedRecord.IPs[k]
+
+					assert.Equal(t, expectedIP, actualIP)
+				}
+			}
+
 		})
 	}
 }
