@@ -53,3 +53,35 @@ func TestGetEvaluations(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateState(t *testing.T) {
+	var testCases = []struct {
+		desc        string
+		asgs        []*AutoScalingGroup
+		rules       []*FormattingRule
+		expected    *State
+		shouldError bool
+	}{
+		{
+			desc:        "nil should fail",
+			shouldError: true,
+		},
+	}
+
+	var (
+		state State
+		err   error
+	)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			state, err = CreateState(tc.asgs, tc.rules)
+			if tc.shouldError {
+				assert.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}

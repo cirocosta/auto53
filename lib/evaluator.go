@@ -13,6 +13,14 @@ func GetEvaluations(current, desired *State) (evals []*Evaluation, err error) {
 	return
 }
 
-func CreateRecords(asgs []*AutoScalingGroup, rules []*FormattingRule) (err error) {
+// CreateState takes autoscalinggroup state and
+// a set of formatting rules to produce a desired
+// records state.
+func CreateState(asgs []*AutoScalingGroup, rules []*FormattingRule) (state State, err error) {
+	if asgs == nil || rules == nil {
+		err = errors.Errorf("asgs and rules must be non-nil")
+		return
+	}
+
 	return
 }

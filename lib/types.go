@@ -8,6 +8,16 @@ const (
 	EvaluationRemoveRecord
 )
 
+// State maps zones to a list of records.
+// For instance:
+//	zone1:
+//		- something
+//		- something-else
+//	asg2-zone33:
+//		- 192-168-10-10
+//		- else-bar
+type State map[string][]string
+
 // Evaluation wraps an action that must be taken
 // by the evaluator which acts as the system that
 // mutates Route53.
