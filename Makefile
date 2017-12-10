@@ -8,4 +8,7 @@ fmt:
 test:
 	cd ./lib && go test -v
 
-.PHONY: install fmt
+image:
+	docker build -t cirocosta/auto53 .
+
+.PHONY: install fmt image test
