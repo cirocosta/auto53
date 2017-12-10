@@ -102,12 +102,12 @@ type FormattingRule struct {
 	// in AWS.
 	// This is used to match an instance's autoscaling
 	// group with records to be created.
-	AutoScalingGroup string
+	AutoScalingGroup string `yaml:"AutoScalingGroup"`
 
 	// Zone is the private or public zone created
 	// in Route53 to use as the domain for the
 	// record.
-	Zone string
+	Zone string `yaml:"Zone"`
 
 	// Record is a template that is used
 	// as the name for the entry in the zone.
@@ -119,10 +119,10 @@ type FormattingRule struct {
 	// would be formatted as:
 	//	instance-i-012931-asg1 for a machine
 	// with the id `i-012931`.
-	Record string
+	Record string `yaml:"Record"`
 
 	// template corresponds to the parsed Record template
-	template *template.Template
+	template *template.Template `yaml:"-"`
 }
 
 func (f *FormattingRule) ParseRecordTemplate() (err error) {

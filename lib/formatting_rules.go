@@ -32,7 +32,6 @@ func FormattingRulesFromYamlFile(file string) (rules []*FormattingRule, err erro
 		return
 	}
 
-	rules = make([]*FormattingRule, 0)
 	err = yaml.Unmarshal(configContent, &rules)
 	if err != nil {
 		err = errors.Wrapf(err,

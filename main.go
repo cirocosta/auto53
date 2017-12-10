@@ -10,7 +10,8 @@ import (
 )
 
 type cliConfig struct {
-	Config   string        `arg:"path to the formatting rules configuration file`
+	Config   string        `arg:"help:path to the formatting rules configuration file`
+	Debug    bool          `arg:"help:activates debug-level logging"`
 	Dry      bool          `arg:"help:run without performing modifications"`
 	Interval time.Duration `arg:"help:interval between periodic state retrieval`
 	Listen   bool          `arg:"help:listen for API requests`
@@ -21,6 +22,7 @@ type cliConfig struct {
 var (
 	args = &cliConfig{
 		Config:   "./auto53.yaml",
+		Debug:    false,
 		Dry:      false,
 		Interval: 2 * time.Minute,
 		Listen:   false,
@@ -50,32 +52,19 @@ func main() {
 	must(err)
 
 	a, err := lib.NewAuto(lib.AutoConfig{
+		Debug:           args.Debug,
 		FormattingRules: rules,
 	})
 	must(err)
 
-	records, err := a.ListZoneRecords("/hostedzone/Z1UYP7K3ZF7TLR")
-	must(err)
-
-	for _, record := range records {
-		logger.Info().Interface("record", record).Msg("aaa")
-	}
-
-	zones, err := a.ListZones()
-	must(err)
-
-	for _, zone := range zones {
-		logger.Info().Interface("zone", zone).Msg("bbb")
-	}
-
-	asgs, err := a.ListAutoscalingGroups([]string{"wedeploy-swarm-worker-xyz1"})
+	asgs, err := a.ListAutoscalingGroups()
 	must(err)
 
 	for _, asg := range asgs {
-		logger.Info().Interface("asg", asg).Msg("ccc")
+		logger.Info().Interface("asg", asg).Msg("aaa")
 	}
 
-	records, err = lib.CreateRecords(asgs, rules)
+	records, err := lib.CreateRecords(asgs, rules)
 	must(err)
 
 	for _, record := range records {

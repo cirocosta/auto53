@@ -20,6 +20,7 @@ type Auto struct {
 
 type AutoConfig struct {
 	FormattingRules []*FormattingRule
+	Debug           bool
 }
 
 func NewAuto(cfg AutoConfig) (a Auto, err error) {
@@ -34,7 +35,14 @@ func NewAuto(cfg AutoConfig) (a Auto, err error) {
 		Str("from", "auto").
 		Logger()
 
-	sess, err := session.NewSession()
+	var awsConfig = &aws.Config{}
+
+	if cfg.Debug {
+		awsConfig.LogLevel =
+			aws.LogLevel(aws.LogDebug | aws.LogDebugWithRequestErrors)
+	}
+
+	sess, err := session.NewSession(awsConfig)
 	if err != nil {
 		err = errors.Wrapf(err, "failed to create aws session")
 		return
@@ -52,11 +60,8 @@ const (
 )
 
 // TODO paginate over all results
-func (a *Auto) ListAutoscalingGroups(names []string) (asgsMap map[string]*AutoScalingGroup, err error) {
-	if len(names) == 0 {
-		err = errors.Errorf("names can't be empty")
-		return
-	}
+func (a *Auto) ListAutoscalingGroups() (asgsMap map[string]*AutoScalingGroup, err error) {
+	var present bool
 
 	tagsFilter := &ec2.Filter{
 		Name:   aws.String("tag:" + autoscalingGroupTag),
@@ -65,11 +70,20 @@ func (a *Auto) ListAutoscalingGroups(names []string) (asgsMap map[string]*AutoSc
 
 	asgsMap = map[string]*AutoScalingGroup{}
 
-	for _, name := range names {
+	for _, rule := range a.formattingRules {
+		a.logger.Info().Interface("rule", rule).Msg("rule")
+		_, present = asgsMap[rule.AutoScalingGroup]
+		if present {
+			continue
+		}
+
+		asgsMap[rule.AutoScalingGroup] = &AutoScalingGroup{
+			Name: rule.AutoScalingGroup,
+		}
+
 		tagsFilter.Values = append(
 			tagsFilter.Values,
-			aws.String(name))
-		asgsMap[name] = &AutoScalingGroup{Name: name}
+			aws.String(rule.AutoScalingGroup))
 	}
 
 	var (
