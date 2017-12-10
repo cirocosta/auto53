@@ -169,6 +169,9 @@ func (a *Auto) ListZones() (zones []*Zone, err error) {
 	return
 }
 
+// GetZonesRecords returns a map of zoneIDs and
+// A records associated with each zone.
+// TODO make this retrieval parallel.
 func (a *Auto) GetZonesRecords() (recordsMap map[string][]*Record, err error) {
 	var (
 		present bool
@@ -199,6 +202,77 @@ func (a *Auto) GetZonesRecords() (recordsMap map[string][]*Record, err error) {
 		}
 
 		recordsMap[rule.Zone] = records
+	}
+
+	return
+}
+
+// TODO honor route53 rate limits
+func (a *Auto) ExecuteEvaluations(evals []*Evaluation) (err error) {
+	var (
+		evalsMap = map[string][]*Evaluation{}
+		inputs   []*route53.ChangeResourceRecordSetsInput
+		action   string
+		present  bool
+		ndx      int
+	)
+
+	for _, eval := range evals {
+		_, present = evalsMap[eval.Record.Zone]
+		if !present {
+			evalsMap[eval.Record.Zone] = make([]*Evaluation, 0)
+		}
+
+		evalsMap[eval.Record.Zone] = append(
+			evalsMap[eval.Record.Zone],
+			eval)
+	}
+
+	inputs = make([]*route53.ChangeResourceRecordSetsInput, len(evalsMap))
+	for zone, zoneEvals := range evalsMap {
+		changes := make([]*route53.Change, 0)
+
+		for _, eval := range zoneEvals {
+			switch eval.Type {
+			case EvaluationAddRecord:
+				action = "CREATE"
+			case EvaluationRemoveRecord:
+				action = "REMOVE"
+			default:
+				err = errors.Errorf("Unexpected evaluation type %+v", eval)
+				return
+			}
+
+			resourceRecords := make([]*route53.ResourceRecord, 0)
+
+			for _, ip := range eval.Record.IPs {
+				resourceRecords = append(
+					resourceRecords,
+					&route53.ResourceRecord{
+						Value: aws.String(ip),
+					})
+			}
+
+			changes = append(changes, &route53.Change{
+				Action: aws.String(action),
+				ResourceRecordSet: &route53.ResourceRecordSet{
+					Name:            aws.String(eval.Record.Name),
+					Type:            aws.String("A"),
+					ResourceRecords: resourceRecords,
+				},
+			})
+
+		}
+
+		inputs[ndx] = &route53.ChangeResourceRecordSetsInput{
+			ChangeBatch: &route53.ChangeBatch{
+				Changes: changes,
+				Comment: aws.String("auto53"),
+			},
+			HostedZoneId: aws.String(zone),
+		}
+
+		ndx++
 	}
 
 	return
