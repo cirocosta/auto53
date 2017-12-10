@@ -1,8 +1,17 @@
 package lib
 
 import (
-	_ "github.com/mitchellh/hashstructure"
+	"os"
+
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
+)
+
+var (
+	logger = zerolog.New(os.Stdout).
+		With().
+		Str("from", "evaluator").
+		Logger()
 )
 
 // GetEvaluations retrieves a list of ordered
@@ -13,13 +22,77 @@ import (
 // are missing and which ones are meant to be
 // deleted.
 //
-// For each record, sort the IPs and then take the hash of it.
+// For each record, take the hash of it.
 // Given the two arrays of hashed objects, calculate
-// the additions and removals.
+// the additions and removals by looking at a map of current
+// records and a map of desired records.
 func GetEvaluations(current, desired []*Record) (evals []*Evaluation, err error) {
 	if current == nil || desired == nil {
 		err = errors.Errorf("current and desired must be non-nil")
 		return
+	}
+
+	var (
+		currentMap = map[uint64]*Record{}
+		desiredMap = map[uint64]*Record{}
+		present    bool
+	)
+
+	for _, c := range current {
+		err = c.ComputeHash()
+		if err != nil {
+			err = errors.Wrapf(err, "failed to compute hash of record")
+			return
+		}
+
+		currentMap[c.hash] = c
+	}
+
+	for _, d := range desired {
+		err = d.ComputeHash()
+		if err != nil {
+			err = errors.Wrapf(err, "failed to compute hash of record")
+			return
+		}
+
+		desiredMap[d.hash] = d
+	}
+
+	logger.Info().Interface("map", currentMap).Msg("--CURRENT")
+	logger.Info().Interface("map", desiredMap).Msg("++DESIRED")
+
+	evals = make([]*Evaluation, 0)
+
+	// if currentState has something that is
+	// not in the desiredState: delete
+	for cHash, c := range currentMap {
+		_, present = desiredMap[cHash]
+		if present {
+			continue
+		}
+
+		logger.Info().Interface("record", c).Msg("REMOVE")
+
+		evals = append(evals, &Evaluation{
+			Type:   EvaluationRemoveRecord,
+			Record: c,
+		})
+	}
+
+	// if desiredState has something that is
+	// not in the currentState: add
+	for dHash, d := range desiredMap {
+		_, present = currentMap[dHash]
+		if present {
+			continue
+		}
+
+		logger.Info().Interface("record", d).Msg("ADD")
+
+		evals = append(evals, &Evaluation{
+			Type:   EvaluationAddRecord,
+			Record: d,
+		})
 	}
 
 	return

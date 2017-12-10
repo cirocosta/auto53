@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"text/template"
 
+	"github.com/mitchellh/hashstructure"
 	"github.com/pkg/errors"
 )
 
@@ -21,7 +22,23 @@ const (
 type Record struct {
 	Zone string
 	Name string
-	IPs  []string
+	IPs  []string `hash:"set"`
+	hash uint64   `hash:"ignore"`
+}
+
+func (r *Record) ComputeHash() (err error) {
+	var hash uint64
+
+	hash, err = hashstructure.Hash(r, nil)
+	if err != nil {
+		err = errors.Wrapf(err,
+			"failed to hash struct %+v", r)
+		return
+	}
+
+	r.hash = hash
+
+	return
 }
 
 type Zone struct {

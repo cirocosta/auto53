@@ -75,7 +75,7 @@ func TestGetEvaluations(t *testing.T) {
 			shouldError: false,
 		},
 		{
-			desc: "update if ip-set changes with in-place update",
+			desc: "update if ip-set changes with removal and addition",
 			current: []*Record{
 				{
 					Zone: "apex1",
@@ -92,7 +92,15 @@ func TestGetEvaluations(t *testing.T) {
 			},
 			expected: []*Evaluation{
 				{
-					Type: EvaluationUpdateRecord,
+					Type: EvaluationRemoveRecord,
+					Record: &Record{
+						Zone: "apex1",
+						Name: "record1",
+						IPs:  []string{"1.1.1.1"},
+					},
+				},
+				{
+					Type: EvaluationAddRecord,
 					Record: &Record{
 						Zone: "apex1",
 						Name: "record1",
@@ -120,7 +128,15 @@ func TestGetEvaluations(t *testing.T) {
 			},
 			expected: []*Evaluation{
 				{
-					Type: EvaluationUpdateRecord,
+					Type: EvaluationRemoveRecord,
+					Record: &Record{
+						Zone: "apex1",
+						Name: "record1",
+						IPs:  []string{"1.1.1.1"},
+					},
+				},
+				{
+					Type: EvaluationAddRecord,
 					Record: &Record{
 						Zone: "apex1",
 						Name: "record1",
