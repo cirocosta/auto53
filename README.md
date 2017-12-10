@@ -59,7 +59,7 @@ i-0321-machine.ciro-test:
   - 10.0.0.3
 ```
 
-Now we could consider the situation where `asg1` scales out to `3` instances while at the same time having the death of `i-0321:
+Now we could consider the situation where `asg1` scales out to `3` instances while at the same time having the death of `i-0321`:
 
 
 ```diff
