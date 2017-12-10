@@ -10,30 +10,27 @@ import (
 )
 
 type cliConfig struct {
-	Interval time.Duration `arg:"help:interval between state retrieval`
-	Dry      bool          `arg:"help:run once without performing modifications"`
+	Config   string        `arg:"path to the formatting rules configuration file`
+	Dry      bool          `arg:"help:run without performing modifications"`
+	Interval time.Duration `arg:"help:interval between periodic state retrieval`
+	Listen   bool          `arg:"help:listen for API requests`
+	Once     bool          `arg:"help:run one time and exit"`
+	Port     int           `arg:"help:port to listen for API requests`
 }
 
 var (
 	args = &cliConfig{
-		Interval: 1 * time.Minute,
+		Config:   "./auto53.yaml",
+		Dry:      false,
+		Interval: 2 * time.Minute,
+		Listen:   false,
+		Once:     false,
+		Port:     8080,
 	}
 	logger = zerolog.New(os.Stdout).
 		With().
 		Str("from", "main").
 		Logger()
-	rules = []*lib.FormattingRule{
-		{
-			AutoScalingGroup: "wedeploy-swarm-worker-xyz1",
-			Zone:             "private-wedeploy-xyz1",
-			Record:           "{{ .Id }}-asg",
-		},
-		{
-			AutoScalingGroup: "wedeploy-swarm-worker-xyz1",
-			Zone:             "private-wedeploy-xyz1",
-			Record:           "instances",
-		},
-	}
 )
 
 func must(err error) {
@@ -48,6 +45,9 @@ func must(err error) {
 
 func main() {
 	arg.MustParse(args)
+
+	rules, err := lib.FormattingRulesFromYamlFile(args.Config)
+	must(err)
 
 	a, err := lib.NewAuto(lib.AutoConfig{
 		FormattingRules: rules,

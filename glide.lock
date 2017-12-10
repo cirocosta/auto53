@@ -1,5 +1,5 @@
-hash: a219169d772f705bdf03ffec1ef88b6d758c3571b39d65f9591f3c930ebe6e60
-updated: 2017-12-09T23:08:29.021978-02:00
+hash: 9e750e0391e3a60d22147e6839fad9ebfe9de6a2b9911604c1bd1a72ba312921
+updated: 2017-12-10T09:19:58.485396-02:00
 imports:
 - name: github.com/alexflint/go-arg
   version: cef6506c97e5731da728c374ff3523e481026423
@@ -52,6 +52,8 @@ imports:
   subpackages:
   - assert
   - require
+- name: gopkg.in/yaml.v2
+  version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9

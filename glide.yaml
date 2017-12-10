@@ -17,3 +17,4 @@ import:
   - require
   - assert
 - package: github.com/mitchellh/hashstructure
+- package: gopkg.in/yaml.v2
