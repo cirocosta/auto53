@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateState takes autoscalinggroup state and
+// CreateRecords takes autoscalinggroup state and
 // a set of formatting rules to produce a desired
 // records state.
 // TODO possibly take privateIp instead of
@@ -48,7 +48,7 @@ func CreateRecords(asgs map[string]*AutoScalingGroup, rules []*FormattingRule) (
 				return
 			}
 
-			fqdn = templatedRecord + "." + rule.Zone
+			fqdn = templatedRecord + "." + rule.Zone.Name
 
 			existingRecord, present := recordsMap[fqdn]
 			if present {

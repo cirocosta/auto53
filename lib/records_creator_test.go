@@ -35,13 +35,19 @@ func TestCreateRecords(t *testing.T) {
 			rules: []*FormattingRule{
 				{
 					AutoScalingGroup: "asg1",
-					Zone:             "apex1",
-					Record:           "aaa",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
+					Record: "aaa",
 				},
 			},
 			expected: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "aaa",
 					IPs: []string{
 						"1.1.1.1",
@@ -70,13 +76,19 @@ func TestCreateRecords(t *testing.T) {
 			rules: []*FormattingRule{
 				{
 					AutoScalingGroup: "asg1",
-					Zone:             "apex1",
-					Record:           "aaa",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
+					Record: "aaa",
 				},
 			},
 			expected: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "aaa",
 					IPs: []string{
 						"1.1.1.1",
@@ -119,18 +131,27 @@ func TestCreateRecords(t *testing.T) {
 			rules: []*FormattingRule{
 				{
 					AutoScalingGroup: "asg1",
-					Zone:             "apex1",
-					Record:           "aaa",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
+					Record: "aaa",
 				},
 				{
 					AutoScalingGroup: "asg2",
-					Zone:             "apex1",
-					Record:           "aaa",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
+					Record: "aaa",
 				},
 			},
 			expected: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "aaa",
 					IPs: []string{
 						"1.1.1.1",
@@ -162,20 +183,29 @@ func TestCreateRecords(t *testing.T) {
 			rules: []*FormattingRule{
 				{
 					AutoScalingGroup: "asg1",
-					Zone:             "apex1",
-					Record:           "{{ .Id }}-asg1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
+					Record: "{{ .Id }}-asg1",
 				},
 			},
 			expected: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "inst1-asg1",
 					IPs: []string{
 						"1.1.1.1",
 					},
 				},
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "inst2-asg1",
 					IPs: []string{
 						"1.1.1.2",

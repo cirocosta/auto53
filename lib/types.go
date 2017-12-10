@@ -17,10 +17,18 @@ const (
 	EvaluationRemoveRecord
 )
 
+// Zone corresponds to an AWS zone
+// with might be either private or not
+// and be ambiguous about name.
+type Zone struct {
+	Name string `yaml:"Name"`
+	ID   string `yaml:"ID"`
+}
+
 // Record corresponds to an A record that maps
 // a DNS record to multiple IPs
 type Record struct {
-	Zone string
+	Zone Zone
 	Name string
 	IPs  []string `hash:"set"`
 	hash uint64   `hash:"ignore"`
@@ -39,12 +47,6 @@ func (r *Record) ComputeHash() (err error) {
 	r.hash = hash
 
 	return
-}
-
-type Zone struct {
-	Name    string
-	ID      string
-	Private bool
 }
 
 // Evaluation wraps an action that must be taken
@@ -107,7 +109,12 @@ type FormattingRule struct {
 	// Zone is the private or public zone created
 	// in Route53 to use as the domain for the
 	// record.
-	Zone string `yaml:"Zone"`
+	Zone Zone `yaml:"Zone"`
+
+	// Public indicates whether a public IP should be
+	// retrieved instead of a private one.
+	// By default private IPs are picked.
+	Public bool `yaml:"Private"`
 
 	// Record is a template that is used
 	// as the name for the entry in the zone.

@@ -38,7 +38,10 @@ func TestGetEvaluations(t *testing.T) {
 			current: []*Record{},
 			desired: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "record1",
 					IPs:  []string{"1.1.1.1"},
 				},
@@ -47,7 +50,10 @@ func TestGetEvaluations(t *testing.T) {
 				{
 					Type: EvaluationAddRecord,
 					Record: &Record{
-						Zone: "apex1",
+						Zone: Zone{
+							Name: "apex1",
+							ID:   "zone123",
+						},
 						Name: "record1",
 						IPs:  []string{"1.1.1.1"},
 					},
@@ -59,14 +65,20 @@ func TestGetEvaluations(t *testing.T) {
 			desc: "nothing if both equal",
 			current: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "record1",
 					IPs:  []string{"1.1.1.1"},
 				},
 			},
 			desired: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "record1",
 					IPs:  []string{"1.1.1.1"},
 				},
@@ -78,14 +90,20 @@ func TestGetEvaluations(t *testing.T) {
 			desc: "update if ip-set changes with removal and addition",
 			current: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "record1",
 					IPs:  []string{"1.1.1.1"},
 				},
 			},
 			desired: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "record1",
 					IPs:  []string{"2.2.2.2"},
 				},
@@ -94,7 +112,10 @@ func TestGetEvaluations(t *testing.T) {
 				{
 					Type: EvaluationRemoveRecord,
 					Record: &Record{
-						Zone: "apex1",
+						Zone: Zone{
+							Name: "apex1",
+							ID:   "zone123",
+						},
 						Name: "record1",
 						IPs:  []string{"1.1.1.1"},
 					},
@@ -102,7 +123,10 @@ func TestGetEvaluations(t *testing.T) {
 				{
 					Type: EvaluationAddRecord,
 					Record: &Record{
-						Zone: "apex1",
+						Zone: Zone{
+							Name: "apex1",
+							ID:   "zone123",
+						},
 						Name: "record1",
 						IPs:  []string{"2.2.2.2"},
 					},
@@ -114,14 +138,20 @@ func TestGetEvaluations(t *testing.T) {
 			desc: "update if ip-set changes with addition",
 			current: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "record1",
 					IPs:  []string{"1.1.1.1"},
 				},
 			},
 			desired: []*Record{
 				{
-					Zone: "apex1",
+					Zone: Zone{
+						Name: "apex1",
+						ID:   "zone123",
+					},
 					Name: "record1",
 					IPs:  []string{"1.1.1.1", "2.2.2.2"},
 				},
@@ -130,7 +160,10 @@ func TestGetEvaluations(t *testing.T) {
 				{
 					Type: EvaluationRemoveRecord,
 					Record: &Record{
-						Zone: "apex1",
+						Zone: Zone{
+							Name: "apex1",
+							ID:   "zone123",
+						},
 						Name: "record1",
 						IPs:  []string{"1.1.1.1"},
 					},
@@ -138,7 +171,10 @@ func TestGetEvaluations(t *testing.T) {
 				{
 					Type: EvaluationAddRecord,
 					Record: &Record{
-						Zone: "apex1",
+						Zone: Zone{
+							Name: "apex1",
+							ID:   "zone123",
+						},
 						Name: "record1",
 						IPs:  []string{"1.1.1.1", "2.2.2.2"},
 					},

@@ -160,9 +160,8 @@ func (a *Auto) ListZones() (zones []*Zone, err error) {
 	zones = make([]*Zone, 0)
 	for _, zone := range result.HostedZones {
 		zones = append(zones, &Zone{
-			ID:      *zone.Id,
-			Name:    *zone.Name,
-			Private: *zone.Config.PrivateZone,
+			ID:   *zone.Id,
+			Name: *zone.Name,
 		})
 	}
 
@@ -181,19 +180,19 @@ func (a *Auto) GetZonesRecords() (recordsMap map[string][]*Record, err error) {
 	recordsMap = map[string][]*Record{}
 
 	for _, rule := range a.formattingRules {
-		if rule.Zone == "" {
+		if rule.Zone.ID == "" {
 			err = errors.Errorf(
 				"Rule %+v does not have a zone specified",
 				rule)
 			return
 		}
 
-		_, present = recordsMap[rule.Zone]
+		_, present = recordsMap[rule.Zone.ID]
 		if present {
 			continue
 		}
 
-		records, err = a.ListZoneRecords(rule.Zone)
+		records, err = a.ListZoneRecords(rule.Zone.ID)
 		if err != nil {
 			err = errors.Wrapf(err,
 				"failed to retrieve records from zone %s",
@@ -201,7 +200,7 @@ func (a *Auto) GetZonesRecords() (recordsMap map[string][]*Record, err error) {
 			return
 		}
 
-		recordsMap[rule.Zone] = records
+		recordsMap[rule.Zone.ID] = records
 	}
 
 	return
@@ -218,13 +217,13 @@ func (a *Auto) ExecuteEvaluations(evals []*Evaluation) (err error) {
 	)
 
 	for _, eval := range evals {
-		_, present = evalsMap[eval.Record.Zone]
+		_, present = evalsMap[eval.Record.Zone.ID]
 		if !present {
-			evalsMap[eval.Record.Zone] = make([]*Evaluation, 0)
+			evalsMap[eval.Record.Zone.ID] = make([]*Evaluation, 0)
 		}
 
-		evalsMap[eval.Record.Zone] = append(
-			evalsMap[eval.Record.Zone],
+		evalsMap[eval.Record.Zone.ID] = append(
+			evalsMap[eval.Record.Zone.ID],
 			eval)
 	}
 
@@ -237,7 +236,7 @@ func (a *Auto) ExecuteEvaluations(evals []*Evaluation) (err error) {
 			case EvaluationAddRecord:
 				action = "CREATE"
 			case EvaluationRemoveRecord:
-				action = "REMOVE"
+				action = "DELETE"
 			default:
 				err = errors.Errorf("Unexpected evaluation type %+v", eval)
 				return
@@ -256,12 +255,12 @@ func (a *Auto) ExecuteEvaluations(evals []*Evaluation) (err error) {
 			changes = append(changes, &route53.Change{
 				Action: aws.String(action),
 				ResourceRecordSet: &route53.ResourceRecordSet{
-					Name:            aws.String(eval.Record.Name),
+					Name:            aws.String(eval.Record.Name + "." + eval.Record.Zone.Name + "."),
 					Type:            aws.String("A"),
 					ResourceRecords: resourceRecords,
+					TTL:             aws.Int64(300),
 				},
 			})
-
 		}
 
 		inputs[ndx] = &route53.ChangeResourceRecordSetsInput{
@@ -273,6 +272,14 @@ func (a *Auto) ExecuteEvaluations(evals []*Evaluation) (err error) {
 		}
 
 		ndx++
+	}
+
+	for _, input := range inputs {
+		_, err = a.route53.ChangeResourceRecordSets(input)
+		if err != nil {
+			err = errors.Wrapf(err, "batch request failed %+v", input)
+			return
+		}
 	}
 
 	return
@@ -320,7 +327,10 @@ func (a *Auto) ListZoneRecords(zone string) (records []*Record, err error) {
 		}
 
 		record := &Record{
-			Zone: zone,
+			Zone: Zone{
+				ID:   zone,
+				Name: strings.Trim(zoneName, "."),
+			},
 			Name: strings.TrimSuffix(*recordSet.Name, zoneName),
 			IPs:  []string{},
 		}

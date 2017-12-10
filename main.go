@@ -91,4 +91,7 @@ func main() {
 		logger.Info().Interface("eval", eval).Msg("--------")
 	}
 
+	err = a.ExecuteEvaluations(evals)
+	must(err)
+
 }
