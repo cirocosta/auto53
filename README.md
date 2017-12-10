@@ -31,14 +31,18 @@ and also the following formatting configuration:
 # for each zone we can tie several
 # autoscaling groups that present
 # an automatic record creation rule.
-formatting_rules:
-  - autoscaling_group: 'asg1'
-    zone': 'ciro-test'
-    record: 'asg1-machines'
+--- 
+- AutoScalingGroup: 'asg1'
+  Zone': 
+    ID: 'zone123'
+    Name: 'ciro-test'
+  Record: 'asg1-machines'
 
-  - autoscaling_group: 'asg1'
-    zone': 'ciro-test'
-    record: '{{ .Id }}-machine'
+- AutoScalingGroup: 'asg1'
+  Zone': 
+    ID: 'zone123'
+    Name: 'ciro-test'
+  Record: '{{ .Id }}-machine'
 ```
 
 with that we'd end up with the following records:
