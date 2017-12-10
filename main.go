@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -60,10 +61,6 @@ func main() {
 	asgs, err := a.GetAutoScalingGroups()
 	must(err)
 
-	for _, asg := range asgs {
-		logger.Info().Interface("asg", asg).Msg("aaa")
-	}
-
 	currentRecords := []*lib.Record{}
 
 	zonesRecords, err := a.GetZonesRecords()
@@ -76,19 +73,16 @@ func main() {
 	desiredRecords, err := lib.CreateRecords(asgs, rules)
 	must(err)
 
-	for _, record := range currentRecords {
-		logger.Info().Interface("record", record).Msg("CURRENT")
-	}
-
-	for _, record := range desiredRecords {
-		logger.Info().Interface("record", record).Msg("DESIRED")
-	}
-
 	evals, err := lib.GetEvaluations(currentRecords, desiredRecords)
 	must(err)
 
-	for _, eval := range evals {
-		logger.Info().Interface("eval", eval).Msg("--------")
+	if args.Dry {
+		fmt.Println("")
+		lib.ShowAutoScalingGroupsTable(asgs)
+
+		fmt.Println("")
+		lib.ShowEvalsTable(evals)
+		return
 	}
 
 	err = a.ExecuteEvaluations(evals)

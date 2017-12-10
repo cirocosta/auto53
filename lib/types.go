@@ -2,6 +2,9 @@ package lib
 
 import (
 	"bytes"
+	"fmt"
+	"os"
+	"text/tabwriter"
 	"text/template"
 
 	"github.com/mitchellh/hashstructure"
@@ -160,4 +163,51 @@ func (f *FormattingRule) TemplateRecord(instance *Instance) (res string, err err
 
 	res = buf.String()
 	return
+}
+
+func ShowAutoScalingGroupsTable(asgs map[string]*AutoScalingGroup) {
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
+
+	fmt.Println("AUTOSCALING GROUPS")
+	fmt.Fprintln(w, "NAME\tINSTANCE\tPRIVATE\tPUBLIC\t")
+	for _, asg := range asgs {
+		for _, instance := range asg.Instances {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+				asg.Name,
+				instance.Id,
+				instance.PrivateIp,
+				instance.PublicIp)
+		}
+	}
+	w.Flush()
+
+}
+
+func ShowEvalsTable(evals []*Evaluation) {
+	var (
+		evalType string
+	)
+
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
+
+	fmt.Println("EVALS")
+	fmt.Fprintln(w, "TYPE\tRECORD\tVALUES\t")
+	for _, eval := range evals {
+		switch eval.Type {
+		case EvaluationAddRecord:
+			evalType = "create"
+		case EvaluationRemoveRecord:
+			evalType = "delete"
+		default:
+			panic(errors.Errorf("unknown eval type %+v", eval))
+		}
+
+		fmt.Fprintf(w, "%s\t%s\t%+v\n",
+			evalType,
+			eval.Record.Name,
+			eval.Record.IPs)
+	}
+	w.Flush()
 }
