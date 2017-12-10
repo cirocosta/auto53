@@ -16,3 +16,4 @@ import:
   subpackages:
   - require
   - assert
+- package: github.com/mitchellh/hashstructure

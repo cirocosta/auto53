@@ -1,13 +1,21 @@
 package lib
 
 import (
+	_ "github.com/mitchellh/hashstructure"
 	"github.com/pkg/errors"
 )
 
-// GetEvaluations retrieve a list of ordered
+// GetEvaluations retrieves a list of ordered
 // evaluations to be performed on the current
 // state to reach the desired state.
 //
+// It discovers which elements in a given array
+// are missing and which ones are meant to be
+// deleted.
+//
+// For each record, sort the IPs and then take the hash of it.
+// Given the two arrays of hashed objects, calculate
+// the additions and removals.
 func GetEvaluations(current, desired []*Record) (evals []*Evaluation, err error) {
 	if current == nil || desired == nil {
 		err = errors.Errorf("current and desired must be non-nil")
