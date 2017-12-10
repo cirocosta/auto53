@@ -140,34 +140,6 @@ func (a *Auto) GetAutoScalingGroups() (asgsMap map[string]*AutoScalingGroup, err
 	return
 }
 
-// ListZones iterates over all the zones that can be
-// fetched by the user. It then only shows those that
-// are described by rules provided.
-// TODO paginate over all results
-func (a *Auto) ListZones() (zones []*Zone, err error) {
-	var (
-		input  = &route53.ListHostedZonesInput{}
-		result *route53.ListHostedZonesOutput
-	)
-
-	result, err = a.route53.ListHostedZones(input)
-	if err != nil {
-		err = errors.Wrapf(err,
-			"failed to list hosted zone of account")
-		return
-	}
-
-	zones = make([]*Zone, 0)
-	for _, zone := range result.HostedZones {
-		zones = append(zones, &Zone{
-			ID:   *zone.Id,
-			Name: *zone.Name,
-		})
-	}
-
-	return
-}
-
 // GetZonesRecords returns a map of zoneIDs and
 // A records associated with each zone.
 // TODO make this retrieval parallel.

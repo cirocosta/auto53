@@ -96,3 +96,31 @@ i-0555-machine.ciro-test:
   - 10.0.0.5
 ```
 
+### Usage
+
+`auto53` aims at being a single binary that is capable of running in 2 modes:
+
+- server mode: sits in an instance querying route53 state from time to time as well as being (optionally) notified by SNS in case of any changes in an autoscaling group;
+- single execution mode: runs once whenever the binary is fired - suitable for executions in the context of a one-off lambda function.
+
+In either case, the necessary user permissions are needed:
+
+- EC2 Describe Instances
+- Route53 - ListResourceRecordSets, ChangeResourceRecordSets
+
+The AWS credentials are accessed via the default behavior of AWS CLI (either environment variables or config file under `~/.aws`).
+
+```
+Usage: auto53 [opts ...]
+
+Options:
+  --config CONFIG [default: ./auto53.yaml]
+  --debug                activates debug-level logging
+  --dry                  run without performing modifications
+  --interval INTERVAL [default: 2m0s]
+  --listen
+  --once                 run one time and exit
+  --port PORT [default: 8080]
+  --help, -h             display this help and exit
+```
+
