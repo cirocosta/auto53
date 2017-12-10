@@ -57,18 +57,38 @@ func main() {
 	})
 	must(err)
 
-	asgs, err := a.ListAutoscalingGroups()
+	asgs, err := a.GetAutoScalingGroups()
 	must(err)
 
 	for _, asg := range asgs {
 		logger.Info().Interface("asg", asg).Msg("aaa")
 	}
 
-	records, err := lib.CreateRecords(asgs, rules)
+	currentRecords := []*lib.Record{}
+
+	zonesRecords, err := a.GetZonesRecords()
 	must(err)
 
-	for _, record := range records {
-		logger.Info().Interface("created-record", record).Msg("ddd")
+	for _, records := range zonesRecords {
+		currentRecords = append(currentRecords, records...)
+	}
+
+	desiredRecords, err := lib.CreateRecords(asgs, rules)
+	must(err)
+
+	for _, record := range currentRecords {
+		logger.Info().Interface("record", record).Msg("CURRENT")
+	}
+
+	for _, record := range desiredRecords {
+		logger.Info().Interface("record", record).Msg("DESIRED")
+	}
+
+	evals, err := lib.GetEvaluations(currentRecords, desiredRecords)
+	must(err)
+
+	for _, eval := range evals {
+		logger.Info().Interface("eval", eval).Msg("--------")
 	}
 
 }
