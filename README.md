@@ -4,6 +4,8 @@
 
 <br/>
 
+[![Build Status](https://travis-ci.com/cirocosta/auto53.svg?token=ixZ9XiEPW4YH62ixq7Av&branch=master)](https://travis-ci.com/cirocosta/auto53)
+
 
 ### Overview
 
